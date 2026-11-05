@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>অ্যাডমিন প্যানেল</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f1ea;--tx:#1b2a41;--pri:#8a5a14;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1b19;--tx:#eee;--card:#2a2926}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Hind Siliguri',sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;max-width:1100px;margin:auto}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 1px 6px #0002}
+label{display:block;font-size:14px;font-weight:600;margin:10px 0 4px}
+input[type=text]{width:100%;padding:8px;border:1px solid #aaa;border-radius:6px;font:inherit;background:transparent;color:inherit}
+canvas{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;background:#fff}
+button{font:inherit;font-weight:600;border:0;border-radius:6px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer;margin:4px 4px 4px 0}
+button.sec{background:#6c7c88}
+ol{padding-left:20px;font-size:14px;line-height:1.7}
+small{opacity:.75}
+</style>
+</head>
+<body>
+<h1>⚙ অ্যাডমিন প্যানেল</h1>
+<div class="grid">
+  <div>
+    <div class="card">
+      <canvas id="c"></canvas>
+      <small>পোস্টারের ওপর মাউস টেনে ছবি বসার জায়গা (লাল বক্স) আঁকুন।</small>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <label>১. নতুন পোস্টার/প্লাকার্ড (PNG বা JPG)</label>
+      <input type="file" id="ff" accept="image/*">
+      <small>পোস্টার না বদলালে এটা বাদ দিন।</small>
+      <label>২. শিরোনাম</label><input type="text" id="t">
+      <label>৩. ছোট লেখা (প্রোগ্রামের নাম)</label><input type="text" id="s">
+      <label>৪. ডাউনলোডের ফাইলের নাম</label><input type="text" id="fn">
+      <label>৫. ছবির কোণা কতটা গোল: <span id="rv"></span></label>
+      <input type="range" id="r" min="0" max="300" step="1" style="width:100%">
+      <label>টেস্ট ছবি দিয়ে দেখুন (ঐচ্ছিক)</label>
+      <input type="file" id="tp" accept="image/*">
+    </div>
+    <div class="card">
+      <b>সেভ করার জন্য ফাইল নামান:</b><br>
+      <button id="dc">config.json ডাউনলোড</button>
+      <button id="df" class="sec">frame.png ডাউনলোড</button><br>
+      <small>(frame.png শুধু নতুন পোস্টার দিলে লাগবে)</small>
+      <ol>
+        <li>নামানো ফাইল(গুলো) GitHub repository-তে যান।</li>
+        <li><b>Add file → Upload files</b> চাপুন।</li>
+        <li>ফাইল ড্র্যাগ করে দিন, আর <b>Commit changes</b> চাপুন।</li>
+        <li>১-২ মিনিট পর সাইট রিফ্রেশ দিলে নতুন ডিজাইন দেখা যাবে।</li>
+      </ol>
+    </div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+let CFG = { title: '', subtitle: '', frame: 'frame.png', box: { x: .66, y: .15, w: .27, h: .44 }, radius: 42, fileName: 'photo-frame.png', v: 1 };
+let frame = null, test = null, newFrame = false, start = null, transparent = true;
+
+fetch('config.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})).then(c => {
+  Object.assign(CFG, c); fill(); const im = new Image(); im.onload = () => setFrame(im); im.src = CFG.frame + '?t=' + Date.now();
+});
+function fill() { $('t').value = CFG.title; $('s').value = CFG.subtitle; $('fn').value = CFG.fileName; $('r').value = CFG.radius; $('rv').textContent = CFG.radius; }
+function setFrame(im) { frame = im; cv.width = im.naturalWidth; cv.height = im.naturalHeight; detect(); draw(); }
+function px() { const b = CFG.box; return { x: b.x * cv.width, y: b.y * cv.height, w: b.w * cv.width, h: b.h * cv.height }; }
+function detect() {
+  const t = document.createElement('canvas'); t.width = frame.naturalWidth; t.height = frame.naturalHeight;
+  const g = t.getContext('2d'); g.drawImage(frame, 0, 0); const b = px();
+  const cx = Math.min(t.width - 1, Math.max(0, Math.floor(b.x + b.w / 2))), cy = Math.min(t.height - 1, Math.max(0, Math.floor(b.y + b.h / 2)));
+  transparent = g.getImageData(cx, cy, 1, 1).data[3] < 250;
+}
+function clipBox(b) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, CFG.radius); else ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); }
+function photoDraw(b) {
+  ctx.save(); clipBox(b);
+  if (test) { const s = Math.max(b.w / test.naturalWidth, b.h / test.naturalHeight), w = test.naturalWidth * s, h = test.naturalHeight * s; ctx.drawImage(test, b.x + (b.w - w) / 2, b.y + (b.h - h) / 2, w, h); }
+  else { ctx.fillStyle = '#e4e4e4'; ctx.fillRect(b.x, b.y, b.w, b.h); }
+  ctx.restore();
+}
+function draw() {
+  if (!frame) return; ctx.clearRect(0, 0, cv.width, cv.height); const b = px();
+  if (transparent) { photoDraw(b); ctx.drawImage(frame, 0, 0); } else { ctx.drawImage(frame, 0, 0); photoDraw(b); }
+  ctx.strokeStyle = '#e11'; ctx.lineWidth = Math.max(3, cv.width / 300); ctx.strokeRect(b.x, b.y, b.w, b.h);
+}
+function pt(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; }
+cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); start = pt(e); };
+cv.onpointermove = e => { if (!start) return; const p = pt(e); CFG.box = { x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) }; draw(); };
+cv.onpointerup = () => { if (start) { start = null; detect(); draw(); } };
+$('ff').onchange = e => { const f = e.target.files[0]; if (!f) return; const im = new Image(); im.onload = () => { newFrame = true; setFrame(im); }; im.src = URL.createObjectURL(f); };
+$('tp').onchange = e => { const f = e.target.files[0]; if (!f) return; const im = new Image(); im.onload = () => { test = im; draw(); }; im.src = URL.createObjectURL(f); };
+$('r').oninput = e => { CFG.radius = +e.target.value; $('rv').textContent = CFG.radius; draw(); };
+function save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
+$('dc').onclick = () => {
+  const r = n => +n.toFixed(4), b = CFG.box;
+  const out = { title: $('t').value, subtitle: $('s').value, frame: 'frame.png', box: { x: r(b.x), y: r(b.y), w: r(b.w), h: r(b.h) }, radius: CFG.radius, fileName: $('fn').value || 'photo-frame.png', v: Date.now() };
+  save(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }), 'config.json');
+};
+$('df').onclick = () => {
+  const t = document.createElement('canvas'); t.width = frame.naturalWidth; t.height = frame.naturalHeight; t.getContext('2d').drawImage(frame, 0, 0);
+  t.toBlob(b => save(b, 'frame.png'), 'image/png');
+};
+</script>
+</body>
+</html>
