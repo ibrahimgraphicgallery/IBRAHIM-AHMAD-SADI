@@ -10,22 +10,23 @@ h1{font-size:20px;margin:6px 0 2px}.sub{font-size:13px;opacity:.75;margin-bottom
 canvas{width:100%;height:auto;display:block;touch-action:none;box-shadow:0 2px 14px #0003;background:#fff}
 button{font:inherit;font-weight:600;border:0;border-radius:6px;padding:9px 18px;background:var(--pri);color:#fff;cursor:pointer;margin:6px 3px}
 button.sec{background:#6c7c88}button:disabled{background:#9aa8b0}#dl{width:100%;margin-top:14px;padding:12px}
-.row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:14px}input[type=range]{width:180px}#hint{font-size:12px;opacity:.7;margin-top:8px}
+.row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:14px}input[type=range]{width:180px}#tf input{width:100%;padding:9px;margin:4px 0;border:1px solid #aaa;border-radius:6px;font:inherit;background:transparent;color:inherit}#hint{font-size:12px;opacity:.7;margin-top:8px}
 </style></head><body><div id="wrap">
 <h1 id="title">লোড হচ্ছে...</h1><div class="sub" id="sub"></div><canvas id="c" width="10" height="10"></canvas>
 <div id="hint">ছবি আপলোড করে আঙুল/মাউস দিয়ে টেনে সরান</div>
+<div id="tf" style="display:none;margin-top:10px"><input id="nm" placeholder="আপনার নাম" maxlength="60"><input id="tt" placeholder="আপনার পরিচয় / পদবি (ঐচ্ছিক)" maxlength="70"></div>
 <input type="file" id="pf" accept="image/*" hidden><button id="up">ছবি আপলোড করুন</button>
 <div class="row"><span>ছবি বড় করুন</span><input type="range" id="z" min="1" max="3" step="0.01" value="1"><button class="sec" id="rs">আবার ঠিক করুন</button></div>
 <button id="dl" disabled>ছবি ডাউনলোড করুন</button></div>
 <script src="config.js"></script>
 <script>
 const $=id=>document.getElementById(id),cv=$('c'),ctx=cv.getContext('2d');
-let C,frame,box,photo,zoom=1,ox=0,oy=0,drag=null;
+let T=null,C,frame,box,photo,zoom=1,ox=0,oy=0,drag=null;
 const slug=new URLSearchParams(location.search).get('c');
 (async()=>{try{
  const r=await fetch(`${SB_URL}/rest/v1/campaigns?slug=eq.${encodeURIComponent(slug)}&select=*`,{headers:{apikey:SB_KEY}});
  C=(await r.json())[0]; if(!C)throw 0;
- $('title').textContent=C.title;$('sub').textContent=C.subtitle||'';document.title=C.title;box=C.box;
+ $('title').textContent=C.title;$('sub').textContent=C.subtitle||'';document.title=C.title;box=C.box;T=C.text_cfg&&C.text_cfg.on?C.text_cfg:null;if(T){$('tf').style.display='block';$('nm').oninput=$('tt').oninput=draw;document.fonts.load('600 40px "Hind Siliguri"','অআ').then(draw)}
  const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{frame=im;cv.width=im.naturalWidth;cv.height=im.naturalHeight;draw()};
  im.src=`${SB_URL}/storage/v1/object/public/frames/${C.frame_path}`;
 }catch(e){$('title').textContent='লিংকটি ঠিক নেই';$('up').style.display='none'}})();
@@ -35,7 +36,15 @@ function draw(){if(!frame)return;ctx.clearRect(0,0,cv.width,cv.height);const b=b
  if(photo){ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();
   const s=Math.max(b.w/photo.naturalWidth,b.h/photo.naturalHeight)*zoom,w=photo.naturalWidth*s,h=photo.naturalHeight*s;
   ctx.drawImage(photo,b.x+(b.w-w)/2+ox*b.w,b.y+(b.h-h)/2+oy*b.h,w,h);ctx.restore()}
- ctx.drawImage(frame,0,0)}
+ ctx.drawImage(frame,0,0);
+ if(T)drawText(ctx,cv.width,cv.height,T,$('nm').value.trim(),$('tt').value.trim())}
+function drawText(x,W,H,t,n,s){x.save();x.fillStyle=t.co;x.textAlign=t.al;x.textBaseline='alphabetic';
+ const px=t.ax*W/100,py=t.ny*H/100,mw=W*0.45;let a=t.ns*W/100,b=t.ts*W/100;
+ const fit=(q,z,w)=>{x.font=`${w} ${z}px "Hind Siliguri",sans-serif`;const m=x.measureText(q).width;return m>mw?z*mw/m:z};
+ if(n){a=fit(n,a,600);x.font=`600 ${a}px "Hind Siliguri",sans-serif`;x.fillText(n,px,py)}
+ if(s){b=fit(s,b,400);x.font=`400 ${b}px "Hind Siliguri",sans-serif`;x.fillText(s,px,py+t.ns*W/100*0.83)}
+ x.restore()}
+
 $('up').onclick=()=>$('pf').click();
 $('pf').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
  im.onload=()=>{photo=im;zoom=1;ox=oy=0;$('z').value=1;$('dl').disabled=false;draw()};im.src=URL.createObjectURL(f)};

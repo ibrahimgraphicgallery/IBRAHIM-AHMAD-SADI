@@ -12,7 +12,7 @@ button{font:inherit;font-weight:600;border:0;border-radius:6px;padding:8px 14px;
 #dz{border:2px dashed #8a5a14;border-radius:10px;padding:26px;text-align:center;cursor:pointer;margin-top:8px}#dz.on{background:#8a5a1422}
 canvas{width:100%;max-height:340px;object-fit:contain;display:none;background:#ccc;margin-top:8px}
 .it{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid #8883;padding:8px 0}.it small{display:block;opacity:.7;word-break:break-all}
-#msg{font-size:14px;margin-top:6px}.ok{color:#1b7f3b}.er{color:#b3261e}
+select{padding:7px;border:1px solid #aaa;border-radius:6px;font:inherit;background:transparent;color:inherit}#msg{font-size:14px;margin-top:6px}.ok{color:#1b7f3b}.er{color:#b3261e}
 </style></head><body><div id="app">
 <h1>⚙ অ্যাডমিন প্যানেল</h1>
 <div id="login" class="card"><label>ইমেইল</label><input type="email" id="em"><label>পাসওয়ার্ড</label><input type="password" id="pw"><button id="lg">লগইন</button><div id="lm" class="er"></div></div>
@@ -21,14 +21,21 @@ canvas{width:100%;max-height:340px;object-fit:contain;display:none;background:#c
   <div id="dz">এখানে PNG ফাইল ড্র্যাগ করে ছাড়ুন, অথবা ক্লিক করে বেছে নিন<br><small>(ছবির জায়গাটা ফাঁকা/transparent থাকতে হবে)</small></div>
   <input type="file" id="fi" accept="image/png" hidden><canvas id="pv"></canvas><div id="msg"></div>
   <label>শিরোনাম</label><input type="text" id="t"><label>ছোট লেখা</label><input type="text" id="s">
-  <label>লিংকের নাম (ইংরেজিতে, ফাঁকা ছাড়া)</label><input type="text" id="sl" placeholder="যেমন rupganj2026">
+  <label style="margin-top:16px"><input type="checkbox" id="tx" checked> ছবির নিচে নাম ও পদবির লেখা থাকবে (মানুষ নিজে লিখবে)</label>
+ <div id="tc"><label>লেখা কোন দিকে মিলবে</label><select id="al"><option value="right">ডান দিক</option><option value="center">মাঝখান</option><option value="left">বাম দিক</option></select>
+ <label>ডানে-বামে অবস্থান</label><input type="range" id="ax" min="0" max="100" step="0.1" style="width:100%">
+ <label>ওপর-নিচে অবস্থান</label><input type="range" id="ny" min="0" max="100" step="0.1" style="width:100%">
+ <label>নামের সাইজ</label><input type="range" id="ns" min="1" max="10" step="0.1" style="width:100%">
+ <label>পদবির সাইজ</label><input type="range" id="ts" min="0.5" max="6" step="0.1" style="width:100%">
+ <label>লেখার রঙ</label><input type="color" id="co" value="#000000"><br><small>ওপরের ছবিতে নমুনা লেখা দেখে সরিয়ে ঠিক করুন।</small></div>
+ <label>লিংকের নাম (ইংরেজিতে, ফাঁকা ছাড়া)</label><input type="text" id="sl" placeholder="যেমন rupganj2026">
   <button id="sv">সেভ করুন</button><button class="sec" id="cn" style="display:none">বাতিল</button></div>
  <div class="card"><b>আপনার প্লাকার্ডগুলো</b><div id="ls"></div></div>
  <button class="sec" id="lo">লগআউট</button></div></div>
 <script src="config.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let S=JSON.parse(localStorage.getItem('sb')||'null'),blob=null,boxv=null,editing=null,list=[];
+let FR=null,S=JSON.parse(localStorage.getItem('sb')||'null'),blob=null,boxv=null,editing=null,list=[];
 const base=location.href.replace(/admin\.html.*$/,'');
 async function auth(body,type){const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=${type}`,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
  const j=await r.json();if(!j.access_token)throw new Error('ইমেইল বা পাসওয়ার্ড ভুল');S={t:j.access_token,r:j.refresh_token,e:Date.now()+j.expires_in*1000-60000};localStorage.setItem('sb',JSON.stringify(S))}
@@ -45,22 +52,35 @@ async function load(){list=await api('/rest/v1/campaigns?select=*&order=created_
   d.innerHTML=`<div><b></b><small>${l}</small></div><div></div>`;d.querySelector('b').textContent=c.title;
   const bt=(t,f,cl)=>{const b=document.createElement('button');b.textContent=t;b.className=cl||'';b.onclick=f;d.lastChild.append(b)};
   bt('লিংক কপি',()=>{navigator.clipboard.writeText(l);alert('কপি হয়েছে')},'sec');bt('এডিট',()=>edit(c));bt('মুছুন',()=>rm(c),'del');$('ls').append(d)})}
-function edit(c){editing=c;$('ft').textContent='এডিট: '+c.title;$('t').value=c.title;$('s').value=c.subtitle||'';$('sl').value=c.slug;$('sl').disabled=true;$('cn').style.display='';scrollTo(0,0)}
-$('cn').onclick=()=>{editing=null;$('ft').textContent='নতুন প্লাকার্ড যোগ করুন';$('t').value=$('s').value=$('sl').value='';$('sl').disabled=false;$('cn').style.display='none'};
+function edit(c){editing=c;$('ft').textContent='এডিট: '+c.title;$('t').value=c.title;$('s').value=c.subtitle||'';$('sl').value=c.slug;$('sl').disabled=true;$('cn').style.display='';blob=null;boxv=c.box;sT(c.text_cfg||{on:false,al:'right',ax:90,ny:70,ns:4,ts:2.2,co:'#000000'});
+ const im=new Image();im.crossOrigin='anonymous';im.onload=()=>{setFR(im);render()};im.src=`${SB_URL}/storage/v1/object/public/frames/${c.frame_path}`;scrollTo(0,0)}
+$('cn').onclick=()=>{editing=null;FR=null;boxv=null;$('ft').textContent='নতুন প্লাকার্ড যোগ করুন';$('t').value=$('s').value=$('sl').value='';$('sl').disabled=false;$('cn').style.display='none'};
 async function rm(c){if(!confirm('"'+c.title+'" মুছে ফেলবেন? এই লিংক আর কাজ করবে না।'))return;
  await api('/rest/v1/campaigns?id=eq.'+c.id,{method:'DELETE'});api('/storage/v1/object/frames/'+c.frame_path,{method:'DELETE'}).catch(()=>{});load()}
 const dz=$('dz');dz.onclick=()=>$('fi').click();dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
 dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');pick(e.dataTransfer.files[0])};$('fi').onchange=e=>pick(e.target.files[0]);
 function say(t,ok){$('msg').textContent=t;$('msg').className=ok?'ok':'er'}
-function pick(f){if(!f)return;const im=new Image();im.onload=()=>{
- const sc=Math.min(1,2400/im.naturalWidth),W=Math.round(im.naturalWidth*sc),H=Math.round(im.naturalHeight*sc),c=$('pv');c.width=W;c.height=H;
- const x=c.getContext('2d',{willReadFrequently:true});x.clearRect(0,0,W,H);x.drawImage(im,0,0,W,H);
- const b=hole(x.getImageData(0,0,W,H),W,H);c.style.display='block';
- if(!b){blob=null;boxv=null;say('ছবির ফাঁকা জায়গা পাওয়া যায়নি। যেখানে ছবি বসবে সেখানে transparent রেখে PNG করুন।');return}
+function setFR(im){const sc=Math.min(1,2400/im.naturalWidth),W=Math.round(im.naturalWidth*sc),H=Math.round(im.naturalHeight*sc);
+ FR=document.createElement('canvas');FR.width=W;FR.height=H;FR.getContext('2d',{willReadFrequently:true}).drawImage(im,0,0,W,H)}
+const rT=()=>({on:$('tx').checked,al:$('al').value,ax:+$('ax').value,ny:+$('ny').value,ns:+$('ns').value,ts:+$('ts').value,co:$('co').value});
+function sT(t){$('tx').checked=t.on;$('al').value=t.al;$('ax').value=t.ax;$('ny').value=t.ny;$('ns').value=t.ns;$('ts').value=t.ts;$('co').value=t.co;$('tc').style.display=t.on?'block':'none'}
+function render(){if(!FR)return;const c=$('pv'),W=FR.width,H=FR.height;c.width=W;c.height=H;c.style.display='block';const x=c.getContext('2d');x.drawImage(FR,0,0);
+ if(boxv){x.strokeStyle='#e11';x.lineWidth=Math.max(3,W/300);x.strokeRect(boxv.x*W,boxv.y*H,boxv.w*W,boxv.h*H)}
+ const t=rT();$('tc').style.display=t.on?'block':'none';if(t.on)drawText(x,W,H,t,"ইব্রাহীম আহমাদ সা'দী",'অনলাইন এক্টিভিস্ট')}
+['tx','al','ax','ny','ns','ts','co'].forEach(i=>$(i).oninput=render);
+document.fonts.load('600 40px "Hind Siliguri"','অআ').then(render);
+function pick(f){if(!f)return;const im=new Image();im.onload=()=>{setFR(im);const W=FR.width,H=FR.height;
+ const b=hole(FR.getContext('2d').getImageData(0,0,W,H),W,H);
+ if(!b){blob=null;boxv=null;render();say('ছবির ফাঁকা জায়গা পাওয়া যায়নি। যেখানে ছবি বসবে সেখানে transparent রেখে PNG করুন।');return}
  boxv=b;say('✔ ছবি বসার জায়গা নিজে থেকেই পাওয়া গেছে',1);
- x.strokeStyle='#e11';x.lineWidth=Math.max(3,W/300);x.strokeRect(b.x*W,b.y*H,b.w*W,b.h*H);
- const t=document.createElement('canvas');t.width=W;t.height=H;t.getContext('2d').drawImage(im,0,0,W,H);t.toBlob(r=>blob=r,'image/png')};
- im.src=URL.createObjectURL(f)}
+ sT({on:true,al:'right',ax:+((b.x+b.w)*100).toFixed(1),ny:+((b.y+b.h+0.10)*100).toFixed(1),ns:4,ts:2.2,co:'#000000'});
+ FR.toBlob(r=>blob=r,'image/png');render()};im.src=URL.createObjectURL(f)}
+function drawText(x,W,H,t,n,s){x.save();x.fillStyle=t.co;x.textAlign=t.al;x.textBaseline='alphabetic';
+ const px=t.ax*W/100,py=t.ny*H/100,mw=W*0.45;let a=t.ns*W/100,b=t.ts*W/100;
+ const fit=(q,z,w)=>{x.font=`${w} ${z}px "Hind Siliguri",sans-serif`;const m=x.measureText(q).width;return m>mw?z*mw/m:z};
+ if(n){a=fit(n,a,600);x.font=`600 ${a}px "Hind Siliguri",sans-serif`;x.fillText(n,px,py)}
+ if(s){b=fit(s,b,400);x.font=`400 ${b}px "Hind Siliguri",sans-serif`;x.fillText(s,px,py+t.ns*W/100*0.83)}
+ x.restore()}
 function hole(img,W,H){const d=img.data,vis=new Uint8Array(W*H),st=new Int32Array(W*H);let best=null;
  for(let i=0;i<W*H;i++){if(vis[i]||d[i*4+3]>=128)continue;let n=0,sp=0,x0=W,x1=0,y0=H,y1=0,edge=false;st[sp++]=i;vis[i]=1;
   while(sp){const p=st[--sp],x=p%W,y=(p-x)/W;n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;if(!x||!y||x==W-1||y==H-1)edge=true;
@@ -70,7 +90,7 @@ function hole(img,W,H){const d=img.data,vis=new Uint8Array(W*H),st=new Int32Arra
 $('sv').onclick=async()=>{const title=$('t').value.trim(),slug=$('sl').value.trim().toLowerCase();
  if(!title||!/^[a-z0-9-]+$/.test(slug))return say('শিরোনাম দিন, আর লিংকের নাম শুধু ইংরেজি অক্ষর/সংখ্যা/- দিয়ে লিখুন');
  if(!editing&&!blob)return say('আগে PNG ফাইল দিন');
- try{say('সেভ হচ্ছে...',1);const data={title,subtitle:$('s').value,file_name:slug+'.png'};
+ try{say('সেভ হচ্ছে...',1);const data={title,subtitle:$('s').value,file_name:slug+'.png',text_cfg:rT()};
   if(blob){const p=slug+'-'+Date.now()+'.png';await api('/storage/v1/object/frames/'+p,{method:'POST',headers:{'Content-Type':'image/png'},body:blob});
    data.frame_path=p;data.box=boxv;if(editing)api('/storage/v1/object/frames/'+editing.frame_path,{method:'DELETE'}).catch(()=>{})}
   if(editing)await api('/rest/v1/campaigns?id=eq.'+editing.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
