@@ -1,112 +1,79 @@
 <!DOCTYPE html>
-<html lang="bn">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>অ্যাডমিন প্যানেল</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f4f1ea;--tx:#1b2a41;--pri:#8a5a14;--card:#fff}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1b19;--tx:#eee;--card:#2a2926}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:'Hind Siliguri',sans-serif;padding:16px}
-h1{font-size:20px;margin:0 0 12px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;max-width:1100px;margin:auto}
-@media(max-width:800px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 1px 6px #0002}
-label{display:block;font-size:14px;font-weight:600;margin:10px 0 4px}
-input[type=text]{width:100%;padding:8px;border:1px solid #aaa;border-radius:6px;font:inherit;background:transparent;color:inherit}
-canvas{width:100%;height:auto;display:block;touch-action:none;cursor:crosshair;background:#fff}
-button{font:inherit;font-weight:600;border:0;border-radius:6px;padding:9px 16px;background:var(--pri);color:#fff;cursor:pointer;margin:4px 4px 4px 0}
-button.sec{background:#6c7c88}
-ol{padding-left:20px;font-size:14px;line-height:1.7}
-small{opacity:.75}
-</style>
-</head>
-<body>
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:'Hind Siliguri',sans-serif;padding:16px}
+#app{max-width:760px;margin:auto}h1{font-size:20px}.card{background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 1px 6px #0002}
+label{display:block;font-size:14px;font-weight:600;margin:10px 0 4px}input[type=text],input[type=email],input[type=password]{width:100%;padding:8px;border:1px solid #aaa;border-radius:6px;font:inherit;background:transparent;color:inherit}
+button{font:inherit;font-weight:600;border:0;border-radius:6px;padding:8px 14px;background:var(--pri);color:#fff;cursor:pointer;margin:4px 4px 4px 0}button.sec{background:#6c7c88}button.del{background:#b3261e}
+#dz{border:2px dashed #8a5a14;border-radius:10px;padding:26px;text-align:center;cursor:pointer;margin-top:8px}#dz.on{background:#8a5a1422}
+canvas{width:100%;max-height:340px;object-fit:contain;display:none;background:#ccc;margin-top:8px}
+.it{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid #8883;padding:8px 0}.it small{display:block;opacity:.7;word-break:break-all}
+#msg{font-size:14px;margin-top:6px}.ok{color:#1b7f3b}.er{color:#b3261e}
+</style></head><body><div id="app">
 <h1>⚙ অ্যাডমিন প্যানেল</h1>
-<div class="grid">
-  <div>
-    <div class="card">
-      <canvas id="c"></canvas>
-      <small>পোস্টারের ওপর মাউস টেনে ছবি বসার জায়গা (লাল বক্স) আঁকুন।</small>
-    </div>
-  </div>
-  <div>
-    <div class="card">
-      <label>১. নতুন পোস্টার/প্লাকার্ড (PNG বা JPG)</label>
-      <input type="file" id="ff" accept="image/*">
-      <small>পোস্টার না বদলালে এটা বাদ দিন।</small>
-      <label>২. শিরোনাম</label><input type="text" id="t">
-      <label>৩. ছোট লেখা (প্রোগ্রামের নাম)</label><input type="text" id="s">
-      <label>৪. ডাউনলোডের ফাইলের নাম</label><input type="text" id="fn">
-      <label>৫. ছবির কোণা কতটা গোল: <span id="rv"></span></label>
-      <input type="range" id="r" min="0" max="300" step="1" style="width:100%">
-      <label>টেস্ট ছবি দিয়ে দেখুন (ঐচ্ছিক)</label>
-      <input type="file" id="tp" accept="image/*">
-    </div>
-    <div class="card">
-      <b>সেভ করার জন্য ফাইল নামান:</b><br>
-      <button id="dc">config.json ডাউনলোড</button>
-      <button id="df" class="sec">frame.png ডাউনলোড</button><br>
-      <small>(frame.png শুধু নতুন পোস্টার দিলে লাগবে)</small>
-      <ol>
-        <li>নামানো ফাইল(গুলো) GitHub repository-তে যান।</li>
-        <li><b>Add file → Upload files</b> চাপুন।</li>
-        <li>ফাইল ড্র্যাগ করে দিন, আর <b>Commit changes</b> চাপুন।</li>
-        <li>১-২ মিনিট পর সাইট রিফ্রেশ দিলে নতুন ডিজাইন দেখা যাবে।</li>
-      </ol>
-    </div>
-  </div>
-</div>
+<div id="login" class="card"><label>ইমেইল</label><input type="email" id="em"><label>পাসওয়ার্ড</label><input type="password" id="pw"><button id="lg">লগইন</button><div id="lm" class="er"></div></div>
+<div id="main" style="display:none">
+ <div class="card"><b id="ft">নতুন প্লাকার্ড যোগ করুন</b>
+  <div id="dz">এখানে PNG ফাইল ড্র্যাগ করে ছাড়ুন, অথবা ক্লিক করে বেছে নিন<br><small>(ছবির জায়গাটা ফাঁকা/transparent থাকতে হবে)</small></div>
+  <input type="file" id="fi" accept="image/png" hidden><canvas id="pv"></canvas><div id="msg"></div>
+  <label>শিরোনাম</label><input type="text" id="t"><label>ছোট লেখা</label><input type="text" id="s">
+  <label>লিংকের নাম (ইংরেজিতে, ফাঁকা ছাড়া)</label><input type="text" id="sl" placeholder="যেমন rupganj2026">
+  <button id="sv">সেভ করুন</button><button class="sec" id="cn" style="display:none">বাতিল</button></div>
+ <div class="card"><b>আপনার প্লাকার্ডগুলো</b><div id="ls"></div></div>
+ <button class="sec" id="lo">লগআউট</button></div></div>
+<script src="config.js"></script>
 <script>
-const $ = id => document.getElementById(id);
-const cv = $('c'), ctx = cv.getContext('2d');
-let CFG = { title: '', subtitle: '', frame: 'frame.png', box: { x: .66, y: .15, w: .27, h: .44 }, radius: 42, fileName: 'photo-frame.png', v: 1 };
-let frame = null, test = null, newFrame = false, start = null, transparent = true;
-
-fetch('config.json?t=' + Date.now()).then(r => r.ok ? r.json() : {}).catch(() => ({})).then(c => {
-  Object.assign(CFG, c); fill(); const im = new Image(); im.onload = () => setFrame(im); im.src = CFG.frame + '?t=' + Date.now();
-});
-function fill() { $('t').value = CFG.title; $('s').value = CFG.subtitle; $('fn').value = CFG.fileName; $('r').value = CFG.radius; $('rv').textContent = CFG.radius; }
-function setFrame(im) { frame = im; cv.width = im.naturalWidth; cv.height = im.naturalHeight; detect(); draw(); }
-function px() { const b = CFG.box; return { x: b.x * cv.width, y: b.y * cv.height, w: b.w * cv.width, h: b.h * cv.height }; }
-function detect() {
-  const t = document.createElement('canvas'); t.width = frame.naturalWidth; t.height = frame.naturalHeight;
-  const g = t.getContext('2d'); g.drawImage(frame, 0, 0); const b = px();
-  const cx = Math.min(t.width - 1, Math.max(0, Math.floor(b.x + b.w / 2))), cy = Math.min(t.height - 1, Math.max(0, Math.floor(b.y + b.h / 2)));
-  transparent = g.getImageData(cx, cy, 1, 1).data[3] < 250;
-}
-function clipBox(b) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, CFG.radius); else ctx.rect(b.x, b.y, b.w, b.h); ctx.clip(); }
-function photoDraw(b) {
-  ctx.save(); clipBox(b);
-  if (test) { const s = Math.max(b.w / test.naturalWidth, b.h / test.naturalHeight), w = test.naturalWidth * s, h = test.naturalHeight * s; ctx.drawImage(test, b.x + (b.w - w) / 2, b.y + (b.h - h) / 2, w, h); }
-  else { ctx.fillStyle = '#e4e4e4'; ctx.fillRect(b.x, b.y, b.w, b.h); }
-  ctx.restore();
-}
-function draw() {
-  if (!frame) return; ctx.clearRect(0, 0, cv.width, cv.height); const b = px();
-  if (transparent) { photoDraw(b); ctx.drawImage(frame, 0, 0); } else { ctx.drawImage(frame, 0, 0); photoDraw(b); }
-  ctx.strokeStyle = '#e11'; ctx.lineWidth = Math.max(3, cv.width / 300); ctx.strokeRect(b.x, b.y, b.w, b.h);
-}
-function pt(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }; }
-cv.onpointerdown = e => { cv.setPointerCapture(e.pointerId); start = pt(e); };
-cv.onpointermove = e => { if (!start) return; const p = pt(e); CFG.box = { x: Math.min(start.x, p.x), y: Math.min(start.y, p.y), w: Math.abs(p.x - start.x), h: Math.abs(p.y - start.y) }; draw(); };
-cv.onpointerup = () => { if (start) { start = null; detect(); draw(); } };
-$('ff').onchange = e => { const f = e.target.files[0]; if (!f) return; const im = new Image(); im.onload = () => { newFrame = true; setFrame(im); }; im.src = URL.createObjectURL(f); };
-$('tp').onchange = e => { const f = e.target.files[0]; if (!f) return; const im = new Image(); im.onload = () => { test = im; draw(); }; im.src = URL.createObjectURL(f); };
-$('r').oninput = e => { CFG.radius = +e.target.value; $('rv').textContent = CFG.radius; draw(); };
-function save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); }
-$('dc').onclick = () => {
-  const r = n => +n.toFixed(4), b = CFG.box;
-  const out = { title: $('t').value, subtitle: $('s').value, frame: 'frame.png', box: { x: r(b.x), y: r(b.y), w: r(b.w), h: r(b.h) }, radius: CFG.radius, fileName: $('fn').value || 'photo-frame.png', v: Date.now() };
-  save(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }), 'config.json');
-};
-$('df').onclick = () => {
-  const t = document.createElement('canvas'); t.width = frame.naturalWidth; t.height = frame.naturalHeight; t.getContext('2d').drawImage(frame, 0, 0);
-  t.toBlob(b => save(b, 'frame.png'), 'image/png');
-};
-</script>
-</body>
-</html>
+const $=id=>document.getElementById(id);
+let S=JSON.parse(localStorage.getItem('sb')||'null'),blob=null,boxv=null,editing=null,list=[];
+const base=location.href.replace(/admin\.html.*$/,'');
+async function auth(body,type){const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=${type}`,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const j=await r.json();if(!j.access_token)throw new Error('ইমেইল বা পাসওয়ার্ড ভুল');S={t:j.access_token,r:j.refresh_token,e:Date.now()+j.expires_in*1000-60000};localStorage.setItem('sb',JSON.stringify(S))}
+async function tok(){if(Date.now()>S.e)await auth({refresh_token:S.r},'refresh_token');return S.t}
+async function api(p,o={}){const t=await tok();o.headers=Object.assign({apikey:SB_KEY,Authorization:'Bearer '+t},o.headers||{});
+ const r=await fetch(SB_URL+p,o);if(!r.ok)throw new Error(await r.text());const x=await r.text();return x?JSON.parse(x):null}
+$('lg').onclick=async()=>{try{await auth({email:$('em').value,password:$('pw').value},'password');show()}catch(e){$('lm').textContent=e.message}};
+$('lo').onclick=()=>{localStorage.removeItem('sb');location.reload()};
+function show(){$('login').style.display='none';$('main').style.display='block';load()}
+if(S)tok().then(show).catch(()=>{});
+async function load(){list=await api('/rest/v1/campaigns?select=*&order=created_at.desc');
+ $('ls').innerHTML=list.length?'':'<small>এখনো কিছু নেই</small>';
+ list.forEach(c=>{const d=document.createElement('div');d.className='it';const l=`${base}index.html?c=${c.slug}`;
+  d.innerHTML=`<div><b></b><small>${l}</small></div><div></div>`;d.querySelector('b').textContent=c.title;
+  const bt=(t,f,cl)=>{const b=document.createElement('button');b.textContent=t;b.className=cl||'';b.onclick=f;d.lastChild.append(b)};
+  bt('লিংক কপি',()=>{navigator.clipboard.writeText(l);alert('কপি হয়েছে')},'sec');bt('এডিট',()=>edit(c));bt('মুছুন',()=>rm(c),'del');$('ls').append(d)})}
+function edit(c){editing=c;$('ft').textContent='এডিট: '+c.title;$('t').value=c.title;$('s').value=c.subtitle||'';$('sl').value=c.slug;$('sl').disabled=true;$('cn').style.display='';scrollTo(0,0)}
+$('cn').onclick=()=>{editing=null;$('ft').textContent='নতুন প্লাকার্ড যোগ করুন';$('t').value=$('s').value=$('sl').value='';$('sl').disabled=false;$('cn').style.display='none'};
+async function rm(c){if(!confirm('"'+c.title+'" মুছে ফেলবেন? এই লিংক আর কাজ করবে না।'))return;
+ await api('/rest/v1/campaigns?id=eq.'+c.id,{method:'DELETE'});api('/storage/v1/object/frames/'+c.frame_path,{method:'DELETE'}).catch(()=>{});load()}
+const dz=$('dz');dz.onclick=()=>$('fi').click();dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};dz.ondragleave=()=>dz.classList.remove('on');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');pick(e.dataTransfer.files[0])};$('fi').onchange=e=>pick(e.target.files[0]);
+function say(t,ok){$('msg').textContent=t;$('msg').className=ok?'ok':'er'}
+function pick(f){if(!f)return;const im=new Image();im.onload=()=>{
+ const sc=Math.min(1,2400/im.naturalWidth),W=Math.round(im.naturalWidth*sc),H=Math.round(im.naturalHeight*sc),c=$('pv');c.width=W;c.height=H;
+ const x=c.getContext('2d',{willReadFrequently:true});x.clearRect(0,0,W,H);x.drawImage(im,0,0,W,H);
+ const b=hole(x.getImageData(0,0,W,H),W,H);c.style.display='block';
+ if(!b){blob=null;boxv=null;say('ছবির ফাঁকা জায়গা পাওয়া যায়নি। যেখানে ছবি বসবে সেখানে transparent রেখে PNG করুন।');return}
+ boxv=b;say('✔ ছবি বসার জায়গা নিজে থেকেই পাওয়া গেছে',1);
+ x.strokeStyle='#e11';x.lineWidth=Math.max(3,W/300);x.strokeRect(b.x*W,b.y*H,b.w*W,b.h*H);
+ const t=document.createElement('canvas');t.width=W;t.height=H;t.getContext('2d').drawImage(im,0,0,W,H);t.toBlob(r=>blob=r,'image/png')};
+ im.src=URL.createObjectURL(f)}
+function hole(img,W,H){const d=img.data,vis=new Uint8Array(W*H),st=new Int32Array(W*H);let best=null;
+ for(let i=0;i<W*H;i++){if(vis[i]||d[i*4+3]>=128)continue;let n=0,sp=0,x0=W,x1=0,y0=H,y1=0,edge=false;st[sp++]=i;vis[i]=1;
+  while(sp){const p=st[--sp],x=p%W,y=(p-x)/W;n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;if(!x||!y||x==W-1||y==H-1)edge=true;
+   for(const q of [x>0?p-1:-1,x<W-1?p+1:-1,y>0?p-W:-1,y<H-1?p+W:-1])if(q>=0&&!vis[q]&&d[q*4+3]<128){vis[q]=1;st[sp++]=q}}
+  if(n>W*H*0.01&&(!best||(best.e&&!edge)||(best.e==edge&&n>best.n)))best={n,e:edge,x0,x1,y0,y1}}
+ return best&&{x:(best.x0-3)/W,y:(best.y0-3)/H,w:(best.x1-best.x0+7)/W,h:(best.y1-best.y0+7)/H}}
+$('sv').onclick=async()=>{const title=$('t').value.trim(),slug=$('sl').value.trim().toLowerCase();
+ if(!title||!/^[a-z0-9-]+$/.test(slug))return say('শিরোনাম দিন, আর লিংকের নাম শুধু ইংরেজি অক্ষর/সংখ্যা/- দিয়ে লিখুন');
+ if(!editing&&!blob)return say('আগে PNG ফাইল দিন');
+ try{say('সেভ হচ্ছে...',1);const data={title,subtitle:$('s').value,file_name:slug+'.png'};
+  if(blob){const p=slug+'-'+Date.now()+'.png';await api('/storage/v1/object/frames/'+p,{method:'POST',headers:{'Content-Type':'image/png'},body:blob});
+   data.frame_path=p;data.box=boxv;if(editing)api('/storage/v1/object/frames/'+editing.frame_path,{method:'DELETE'}).catch(()=>{})}
+  if(editing)await api('/rest/v1/campaigns?id=eq.'+editing.id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  else await api('/rest/v1/campaigns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign(data,{slug}))});
+  say('✔ সেভ হয়েছে',1);blob=null;$('pv').style.display='none';$('cn').onclick();load()}catch(e){say(e.message.includes('duplicate')?'এই লিংকের নাম আগে থেকেই আছে':'সমস্যা: '+e.message)}};
+</script></body></html>
